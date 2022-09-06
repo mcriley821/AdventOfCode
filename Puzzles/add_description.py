@@ -20,7 +20,7 @@ def process_description(description: str) -> list[str]:
 
 
 def add_description(puzzle: int, year: int, description: str):
-    fname = f"Puzzles/{year}/Puzzle{str(puzzle).zfill(2)}.py"
+    fname = f"{year}/Puzzle{str(puzzle).zfill(2)}.py"
     with open(fname, 'r') as f:
         script = f.readlines()
 
