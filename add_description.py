@@ -1,42 +1,51 @@
 #!/usr/bin/env python
-from PrepareScript import process_description_chunk
 from argparse import ArgumentParser
 from datetime import datetime
+
+
+def process_description(description: str) -> list[str]:
+    desc_lines = description.split("\n")
+    for line_no, line in enumerate(iter(desc_lines)):
+        line = "#  " + line.ltrim()
+        if len(line) > 80:
+            ind = 80
+            while not line[ind].isspace():
+                ind -= 1
+
+            desc_lines[line_no] = line[:ind]
+            desc_lines.insert(line_no + 1, line[ind + 1:])
+        else:
+            desc_lines[line_no] = line
+    return desc_lines
 
 
 def add_description(puzzle: int, year: int, description: str):
     fname = f"{year}/Puzzle{str(puzzle).zfill(2)}.py"
     with open(fname, 'r') as f:
-        script = f.read()
+        script = f.readlines()
 
-    index = 0
-    for line in script.split('\n'):
+    for line_no, line in enumerate(script):
         if not line.startswith('#'):
             break
-        index += len(line) + 1
-    processed = process_description_chunk(description)
-    ind = 0
-    for line in processed.split('\n'):
-        if not line.startswith('#  '):
-            processed = f"{processed[:ind] }#  {processed[ind:]}"
-            ind += 3
-        ind += len(line) + 1
-    new_script = script[:index] + processed + '\n' + script[index:]
+    
+    description = process_description(description)
+    for line in reversed(description):
+        script.insert(line_no, line)
     
     with open(fname, 'w') as f:
-        f.write(new_script)
+        f.writelines(script)
 
 
 def main():
     parser = ArgumentParser()
     parser.add_argument("puzzle", type=int, help="puzzle number to add to")
-    parser.add_argument("part_two_desc", help="description of part 2")
+    parser.add_argument("desc", help="description to insert")
     parser.add_argument("-t", "--year", type=int, default=datetime.now().year,
                         help="specify the year of the puzzle")
 
     ns = parser.parse_args()
 
-    add_description(ns.puzzle, ns.year, ns.part_two_desc)
+    add_description(ns.puzzle, ns.year, ns.desc)
 
 
 if __name__ == "__main__":
