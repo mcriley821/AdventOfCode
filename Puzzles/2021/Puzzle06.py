@@ -70,9 +70,40 @@
 #  
 #  Find a way to simulate lanternfish. How many lanternfish would there be after
 #  80 days?
-
+#
+#  --- Part Two ---
+#  Suppose the lanternfish live forever and have unlimited food and space. Would
+#  they take over the entire ocean?
+#  
+#  After 256 days in the example above, there would be a total of 26984457539
+#  lanternfish!
+#  
+#  How many lanternfish would there be after 256 days?
+#
+from __future__ import annotations
+from get_input import get_input
+from collections import Counter, deque
 
 
 def main():
     given = get_input(6, 2021)
+    counts = Counter(int(i) for i in given.split(',') if i)
+    school = deque([counts[i] for i in range(9)], 9)
+
+    def spawn(d: deque):
+        n = school.popleft()
+        school.append(n)
+        school[6] += n
+
+    for _ in range(80):
+        spawn(school)
+    print("Part 1:", sum(school))
+
+    for _ in range(256 - 80):
+        spawn(school)
+    print("Part 2:", sum(school))
+
+
+if __name__ == "__main__":
+    main()
 
