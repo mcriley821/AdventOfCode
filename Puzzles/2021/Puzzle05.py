@@ -56,11 +56,43 @@
 #  Consider only horizontal and vertical lines. At how many points do at
 #  least two lines overlap?
 #  
+#  --- Part Two ---
+#  Unfortunately, considering only horizontal and vertical lines doesn't give
+#  you the full picture; you need to also consider diagonal lines.
+#  
+#  Because of the limits of the hydrothermal vent mapping system, the lines in
+#  your list will only ever be horizontal, vertical, or a diagonal line at 
+#  exactly 45 degrees. In other words:
+#  
+#  An entry like 1,1 -> 3,3 covers points 1,1, 2,2, and 3,3.
+#  An entry like 9,7 -> 7,9 covers points 9,7, 8,8, and 7,9.
+#  Considering all lines from the above example would now produce the following
+#  diagram:
+#  
+#  1.1....11.
+#  .111...2..
+#  ..2.1.111.
+#  ...1.2.2..
+#  .112313211
+#  ...1.2....
+#  ..1...1...
+#  .1.....1..
+#  1.......1.
+#  222111....
+#   
+#  You still need to determine the number of points where at least two lines
+#  overlap. In the above example, this is still anywhere in the diagram with a
+#  2 or larger - now a total of 12 points.
+#  
+#  Consider all of the lines. At how many points do at least two lines overlap?
+#
+from __future__ import annotations
 from get_input import get_input
 from dataclasses import dataclass
+from math import copysign
 
 
-@dataclass
+@dataclass(slots=True)
 class Point:
     x: int
     y: int
@@ -69,46 +101,62 @@ class Point:
     def from_string(x_y_str: str):
         return Point(*map(int, x_y_str.split(',')))
 
+    def copy(self) -> Point:
+        return Point(self.x, self.y)
 
+
+@dataclass(slots=True)
 class LineSegment:
-    def __init__(self, p1: Point, p2: Point):
-        self.p1: Point = p1
-        self.p2: Point = p2
-        self._points = [p1]
-        x, y = p1.x, p1.y
-        dx, dy = p2.x - p1.x, p2.y - p2.y
-        if dy != 0:
-            dy //= abs(dy)
-        if dx != 0:
-            dx //= abs(dx)
-        new_point = p1
-        while new_point != p2:
-            x += dx
-            y += dy
-            new_point = Point(x, y)
-            print(new_point)
-            self._points.append(new_point)
-            break
-        print(self.points)
+    p1: Point
+    p2: Point
     
     @property
-    def is_horizontal(self):
+    def horizontal(self):
         return self.p1.y == self.p2.y
 
     @property
-    def is_vertical(self):
+    def vertical(self):
         return self.p1.x == self.p2.x
-        
-    def __contains__(self, point: Point):
-        return point in self._points 
+
+    def __iter__(self):
+        return self._iter()
+
+    def _iter(self):
+        point = self.p1.copy()
+        yield point
+        dx = self.p2.x - self.p1.x
+        dy = self.p2.y - self.p1.y
+        x_diff = int(copysign(1, dx)) if dx else 0
+        y_diff = int(copysign(1, dy)) if dy else 0
+        while point != self.p2:
+            point.x += x_diff
+            point.y += y_diff
+            yield point
 
 
 def main():
     given = get_input(5, 2021)
-    str_lines = [i.split(" -> ") for i in given.split('\n')]
-    lines = [LineSegment(Point.from_string(i[0]),
-                         Point.from_string(i[1])) for i in str_lines]
-    print(lines)
+    str_lines = [i.split(" -> ") for i in given.split("\n") if i]
+    pts = [Point.from_string(i) for pair in str_lines for i in pair]
+    lines = [LineSegment(x, y) for x, y in zip(*([iter(pts)] * 2))]
+
+    max_x = max(pts, key=lambda x: x.x).x
+    max_y = max(pts, key=lambda x: x.y).y
+
+    grid = [0] * ((max_x + 1) * (max_y + 1))
+    for line in lines:
+        if not (line.vertical or line.horizontal):
+            continue
+        for pt in line:
+            grid[pt.y * (max_x + 1) + pt.x] += 1
+    print("Part 1:", sum(1 for i in grid if i > 1))
+    
+    for line in lines:
+        if line.vertical or line.horizontal:
+            continue
+        for pt in line:
+            grid[pt.y * (max_x + 1) + pt.x] += 1
+    print("Part 2:", sum(1 for i in grid if i > 1))
 
 
 if __name__ == "__main__":
