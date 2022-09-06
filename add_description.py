@@ -6,21 +6,21 @@ from datetime import datetime
 def process_description(description: str) -> list[str]:
     desc_lines = description.split("\n")
     for line_no, line in enumerate(iter(desc_lines)):
-        line = "#  " + line.ltrim()
+        line = "#  " + line.lstrip()
         if len(line) > 80:
             ind = 80
             while not line[ind].isspace():
                 ind -= 1
 
-            desc_lines[line_no] = line[:ind]
+            desc_lines[line_no] = line[:ind] + '\n'
             desc_lines.insert(line_no + 1, line[ind + 1:])
         else:
-            desc_lines[line_no] = line
+            desc_lines[line_no] = line + '\n'
     return desc_lines
 
 
 def add_description(puzzle: int, year: int, description: str):
-    fname = f"{year}/Puzzle{str(puzzle).zfill(2)}.py"
+    fname = f"Puzzles/{year}/Puzzle{str(puzzle).zfill(2)}.py"
     with open(fname, 'r') as f:
         script = f.readlines()
 
