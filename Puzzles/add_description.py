@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-from argparse import ArgumentParser
-from datetime import datetime
-
-
 def process_description(description: str) -> list[str]:
     desc_lines = description.split("\n")
     for line_no, line in enumerate(iter(desc_lines)):
@@ -37,11 +33,22 @@ def add_description(puzzle: int, year: int, description: str):
 
 
 def main():
+    from argparse import ArgumentParser
+    from datetime import datetime, timedelta
+
     parser = ArgumentParser()
-    parser.add_argument("puzzle", type=int, help="puzzle number to add to")
-    parser.add_argument("desc", help="description to insert")
-    parser.add_argument("-t", "--year", type=int, default=datetime.now().year,
-                        help="specify the year of the puzzle")
+    parser.add_argument(
+            "puzzle",
+            type=int,
+            help="puzzle number to add to")
+    parser.add_argument(
+            "desc",
+            help="description to insert")
+    parser.add_argument(
+            "-y", "--year",
+            type=int,
+            default=(datetime.today() - timedelta(weeks=47, days=5)).year,
+            help="specify the year of the puzzle [%(default)s]")
 
     ns = parser.parse_args()
 

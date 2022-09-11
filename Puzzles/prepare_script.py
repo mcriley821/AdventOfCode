@@ -76,14 +76,22 @@ def fill_script_template(puzzle: int, year: int) -> str:
 
 def main():
     from argparse import ArgumentParser
-    from datetime import datetime
+    from datetime import datetime, timedelta
 
     parser = ArgumentParser()
-    parser.add_argument("puzzle", type=int, help="puzzle number to get")
-    parser.add_argument("-y", "--year", type=int, default=datetime.now().year,
-                        help="year of the puzzle to get")
-    parser.add_argument("-f", "--force", action="store_true",
-                        help="force overwrite an existing file")
+    parser.add_argument(
+            "puzzle", 
+            type=int, 
+            help="puzzle number to get")
+    parser.add_argument(
+            "-y", "--year",
+            type=int, 
+            default=(datetime.today() - timedelta(weeks=47, days=5)).year,
+            help="year of the puzzle to get")
+    parser.add_argument(
+            "-f", "--force",
+            action="store_true",
+            help="force overwrite an existing file")
     ns = parser.parse_args()
 
     prepare_script(ns.puzzle, ns.year, overwrite=ns.force)
